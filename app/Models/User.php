@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -20,8 +19,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'first_name', // <-- ADD THIS
-        'last_name',  // <-- ADD THIS
+        'first_name', 
+        'last_name',  
         'email',
         'password',
         'weight',
@@ -50,10 +49,7 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    /**
-     * Get the workout logs for the user.
-     */
-    public function workoutLogs(): HasMany
+        public function workoutLogs(): HasMany
     {
         return $this->hasMany(WorkoutLog::class);
     }

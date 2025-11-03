@@ -1,7 +1,6 @@
 <?php
 
-// File: app/Http/Controllers/AIController.php
-// FINAL COMBINATION - FULL CODE
+
 
 namespace App\Http\Controllers;
 
@@ -12,13 +11,10 @@ use Illuminate\Support\Facades\Http;
 
 class AIController extends Controller
 {
-    // A helper function to call the Gemini API
     private function callGemini(string $prompt)
     {
         $apiKey = config('gemini.api_key');
         
-        // --- THIS IS THE ONLY LINE THAT HAS BEEN CHANGED ---
-        // Using the modern 'v1' endpoint with the correct model 'gemini-2.5-flash'.
         $url = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={$apiKey}";
 
         $response = Http::post($url, [
@@ -80,7 +76,6 @@ class AIController extends Controller
                 return response()->json(['error' => 'The AI returned an empty response.'], 500);
             }
 
-            // Clean the response to ensure it's valid JSON
             $cleanedContent = preg_replace('/^```json\s*|\s*```$/', '', $content);
             $jsonResponse = json_decode($cleanedContent, true);
 
@@ -120,7 +115,6 @@ class AIController extends Controller
                 return response()->json(['error' => 'The AI returned an empty response.'], 500);
             }
 
-            // Clean the response to ensure it's valid JSON
             $cleanedContent = preg_replace('/^```json\s*|\s*```$/', '', $content);
             $jsonResponse = json_decode($cleanedContent, true);
 

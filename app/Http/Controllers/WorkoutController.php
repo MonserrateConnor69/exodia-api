@@ -11,26 +11,19 @@ use Carbon\Carbon;
 
 class WorkoutController extends Controller
 {
-    /**
-     * Get all muscle groups.
-     */
+    
     public function getMuscleGroups()
     {
         return MuscleGroup::all();
     }
 
-    /**
-     * Get all exercises for a specific muscle group.
-     */
+    
     public function getExercisesForMuscleGroup(MuscleGroup $muscleGroup)
     {
         return $muscleGroup->exercises;
     }
 
-    /**
-     * ✅ FINAL FIX: Store a new workout log by exercise NAME.
-     * This version manually checks for the exercise to avoid the 500 error.
-     */
+   
     public function storeWorkoutLog(Request $request)
     {
         $validated = $request->validate([
@@ -60,10 +53,6 @@ class WorkoutController extends Controller
         ], 201);
     }
 
-    /**
-     * Get the muscle groups worked out by the user today.
-     * This function is "time-aware" and accepts a 'date' query parameter for testing.
-     */
     public function getTodaysLogs(Request $request)
     {
         $userId = Auth::id();
@@ -78,9 +67,7 @@ class WorkoutController extends Controller
         return response()->json($groupedLogs);
     }
 
-    /**
-     * Delete a specific workout log.
-     */
+  
     public function destroy(WorkoutLog $log)
     {
         $this->authorize('delete', $log);
@@ -88,9 +75,7 @@ class WorkoutController extends Controller
         return response()->json(['message' => 'Workout log removed successfully.']);
     }
 
-    /**
-     * Get today's logs for a specific muscle group.
-     */
+    
     public function getTodaysLogsForMuscle(MuscleGroup $muscleGroup)
     {
         $userId = Auth::id();

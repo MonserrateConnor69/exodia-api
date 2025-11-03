@@ -29,7 +29,6 @@ class DietLogController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // This is the line that was missing before
         $dietLog = $user->dietLogs()->create($validatedData); 
 
         return response()->json([
