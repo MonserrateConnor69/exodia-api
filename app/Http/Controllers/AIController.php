@@ -5,6 +5,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MuscleGroup;
+use App\Models\WorkoutLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -130,4 +131,59 @@ class AIController extends Controller
             ], 500);
         }
     }
+
+   public function generateDietRecommendation()
+{
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $userDetails = "Age: {$user->age}, Gender: {$user->gender}, Weight: {$user->weight} lbs, Height: {$user->height} inches.";
+
+    // This is the corrected database query.
+    // It properly joins the tables to find all unique muscle groups the user has ever trained.
+    $trainedMuscleGroupIds = WorkoutLog::where('user_id', $user->id)
+        ->join('exercises', 'workout_logs.exercise_id', '=', 'exercises.id')
+        ->select('exercises.muscle_group_id')
+        ->distinct()
+        ->pluck('muscle_group_id');
+    
+    // Get the names of these muscle groups
+    $trainedMuscles = MuscleGroup::whereIn('id', $trainedMuscleGroupIds)
+        ->pluck('name')
+        ->implode(', ');
+
+    if (empty($trainedMuscles)) {
+         // This is a fallback in case the frontend check fails.
+        return response()->json(['error' => 'No workout history found to base a diet on.'], 400);
+    }
+
+    $prompt = "
+        A user with the following profile needs a one-day diet plan: {$userDetails}.
+        The diet plan should be optimized for muscle recovery and growth, focusing on these muscle groups they have trained: {$trainedMuscles}.
+        
+         IMPORTANT: The user is in the Philippines. All recommended meals and ingredients must be commonly available, 
+         affordable, and culturally relevant in the Philippines. Incorporate local staples like rice, chicken (manok), fish (isda),
+          lean pork (baboy), local vegetables (like kangkong, malunggay, talong), and fruits (like bananas, mangoes)
+
+        Please provide a simple, healthy meal plan for Breakfast, Lunch, and Dinner.
+        For each meal, give a brief description and a list of the main food items.
+        Structure the entire response as plain text, using clear headings for each meal. Do not use markdown like '```' or JSON formatting.
+    ";
+
+    try {
+        $content = $this->callGemini($prompt);
+
+        if (!$content) {
+            return response()->json(['error' => 'The AI returned an empty response.'], 500);
+        }
+
+        return response()->json(['diet_plan' => $content]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'The AI service failed with a specific error.',
+            'exception_message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
 }

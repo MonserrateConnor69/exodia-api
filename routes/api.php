@@ -27,8 +27,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/vitals', [UserController::class, 'updateVitals']);
 
     Route::post('/workout-logs', [WorkoutController::class, 'storeWorkoutLog']);
-
     Route::get('/workout-logs', [WorkoutController::class, 'getTodaysLogs']);
+
+    Route::get('/recovery-states', [WorkoutController::class, 'getRecoveryStates']);
+    Route::post('/next-day', [WorkoutController::class, 'advanceDay']);
     Route::delete('/workout-logs/muscle/{muscleGroup}', [WorkoutController::class, 'deleteTodaysLogsForMuscle']);
 
 
@@ -36,8 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/diet-logs', [DietLogController::class, 'store']);
     
     Route::get('/ai/workout/{muscleGroup}', [AIController::class, 'generateWorkout']);
-    
     Route::get('/ai/diet', [AIController::class, 'generateDiet']);
+
+    Route::post('/diet-recommendation', [AIController::class, 'generateDietRecommendation']);
 
      Route::get('/workout-logs/muscle/{muscleGroup}', [WorkoutController::class, 'getTodaysLogsForMuscle']);
      Route::delete('/workout-logs/{log}', [WorkoutController::class, 'destroy']);
