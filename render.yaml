@@ -1,5 +1,10 @@
+# Use a top-level "databases" key to define your PostgreSQL instance.
+databases:
+  - name: exodia-api-db
+    plan: free
+
+# Use the "services" key to define your web service.
 services:
-  # 1. This defines your Laravel Web Service
   - type: web
     name: exodia-api
     plan: free
@@ -18,33 +23,25 @@ services:
         value: 8000
       - key: DB_CONNECTION
         value: pgsql
+      # The 'fromService' block now correctly references the database
+      # defined in the top-level "databases" section.
       - key: DB_HOST
         fromService:
-          type: psql
           name: exodia-api-db
           property: host
       - key: DB_PORT
         fromService:
-          type: psql
           name: exodia-api-db
           property: port
       - key: DB_DATABASE
         fromService:
-          type: psql
           name: exodia-api-db
           property: database
       - key: DB_USERNAME
         fromService:
-          type: psql
           name: exodia-api-db
           property: user
       - key: DB_PASSWORD
         fromService:
-          type: psql
           name: exodia-api-db
           property: password
-
-  # 2. This defines your PostgreSQL Database Service
-  - type: psql
-    name: exodia-api-db
-    plan: free
