@@ -1,8 +1,17 @@
 services:
-  - type: postgres # CORRECTED: Changed from psql to postgres
+  # This defines your database as a Private Service running the official Postgres image
+  - type: private
     name: exodia-db
     plan: free
+    image:
+      name: postgres:15 # Use the official PostgreSQL version 15 image
+    # This automatically creates a disk for the database to store data
+    disk:
+      name: exodia-db-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 1
 
+  # This is your Laravel Web Service
   - type: web
     name: exodia-api
     plan: free
@@ -11,9 +20,9 @@ services:
     startCommand: "php artisan serve --host 0.0.0.0 --port $PORT"
     envVars:
       - key: APP_KEY
-        generateValue: true # Let Render generate a secure key
+        generateValue: true
       - key: GEMINI_API_KEY
-        sync: false # Mark this as a secret to be set in the dashboard
+        sync: false
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
@@ -21,22 +30,22 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - fromService:
-          type: postgres
+          type: private
           name: exodia-db
           envVarKey: DB_HOST
           property: host
       - fromService:
-          type: postgres
+          type: private
           name: exodia-db
           envVarKey: DB_DATABASE
           property: database
       - fromService:
-          type: postgres
+          type: private
           name: exodia-db
           envVarKey: DB_USERNAME
           property: user
       - fromService:
-          type: postgres
+          type: private
           name: exodia-db
           envVarKey: DB_PASSWORD
           property: password
