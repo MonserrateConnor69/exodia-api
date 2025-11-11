@@ -27,6 +27,5 @@ services:
       # Laravel will automatically use this.
       - key: DATABASE_URL
         fromService:
-          type: psql
           name: exodia-api-db
           property: connectionString
