@@ -22,7 +22,7 @@ services:
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
-        value: "gateway01ap-southeast-1.prod.aws.tidbcloud.com"
+        value: "gateway01.ap-southeast-1.prod.aws.tidbcloud.com"
       - key: DB_DATABASE
         value: "test"
       - key: DB_USERNAME
