@@ -26,7 +26,7 @@ services:
       - key: DB_DATABASE
         value: "test"
       - key: DB_USERNAME
-        value: "Wunf2o5PGtikoB.root"
+        value: "Wunf2o5PGtikoBu.root"
       - key: DB_PASSWORD
         value: "xqgRxZ5iwmDe6ote"
       - key: DB_PORT
