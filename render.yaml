@@ -1,20 +1,20 @@
-# 1. Define the database.
+# 1. Define the database
 databases:
   - name: exodia-api-db
     plan: free
 
-# 2. Define the web service.
+# 2. Define the web service
 services:
   - type: web
     name: exodia-api
     plan: free
-    runtime: php:8.2 # <-- Being more specific with the PHP version
+    runtime: php # <- Remove the version number
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       php artisan key:generate --force
       php artisan config:clear
       php artisan migrate --force || true
-    startCommand: php-fpm -F # <-- The correct production start command
+    startCommand: php-fpm -F
     envVars:
       - key: APP_KEY
         sync: false
