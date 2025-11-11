@@ -50,11 +50,20 @@ public function getRecoveryStates()
         return response()->json(['message' => 'Recovery state advanced for all muscles.']);
     }
 
-    public function getMuscleGroups()
-    {
-        return response()->json(MuscleGroup::all());
-    }
+   public function getMuscleGroups()
+{
+    // FINAL TEST: Hardcode a JSON response to confirm serialization works
+    $testGroups = [
+        ['id' => 1, 'name' => 'Chest'],
+        ['id' => 2, 'name' => 'Back'],
+    ];
 
+    // ✅ This is the code you should have deployed for the test
+    return response()->json($testGroups, 200);
+
+    // If that fails, try this to see if any string passes the body
+    // return response('{"data": "TESTING_SUCCESS"}', 200)->header('Content-Type', 'application/json'); 
+}
     
     public function getExercisesForMuscleGroup(MuscleGroup $muscleGroup)
     {
