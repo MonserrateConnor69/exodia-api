@@ -1,9 +1,11 @@
-# Define the PostgreSQL database.
+# 1. Define the database.
+# Render will automatically create this and prepare a DATABASE_URL.
 databases:
   - name: exodia-api-db
     plan: free
 
-# Define the web service.
+# 2. Define the web service.
+# Render will automatically inject the DATABASE_URL from the database above into this service.
 services:
   - type: web
     name: exodia-api
@@ -11,21 +13,20 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     envVars:
+      # --- Standard Laravel environment variables ---
       - key: APP_KEY
         generateValue: true
-      - key: GEMINI_API_KEY
-        sync: false
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
       - key: PORT
         value: 8000
+      # --- Database Connection ---
+      # This tells Laravel to use the PostgreSQL driver.
+      # Laravel will automatically find and use the injected DATABASE_URL.
       - key: DB_CONNECTION
         value: pgsql
-      # Inject the entire database connection URL from the database service.
-      # Laravel will automatically use this.
-      - key: DATABASE_URL
-        fromService:
-          name: exodia-api-db
-          property: connectionString
+      # --- Your Custom Keys ---
+      - key: GEMINI_API_KEY
+        sync: false
