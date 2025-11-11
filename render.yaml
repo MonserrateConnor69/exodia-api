@@ -1,0 +1,31 @@
+# 1. Define the database.
+databases:
+  - name: exodia-api-db
+    plan: free
+
+# 2. Define the web service using Render's Native PHP Environment.
+services:
+  - type: web
+    name: exodia-api
+    plan: free
+    runtime: php
+    # Build and Start Commands for Laravel
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php artisan key:generate --force
+      php artisan config:clear
+      php artisan migrate --force || true
+    startCommand: php-fpm -F
+    # Environment Variables
+    envVars:
+      - key: APP_KEY # Will be set by the key:generate command
+        sync: false
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      # DATABASE_URL is automatically injected from the database above
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: GEMINI_API_KEY
+        sync: false
