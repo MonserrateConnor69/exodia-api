@@ -16,10 +16,41 @@ services:
         value: false
       - key: DB_CONNECTION
         value: pgsql
-      - key: DATABASE_URL
-        value: "postgresql://exodia_api_mg13_user:QJEvqRyVh9gft1GhHbTi7NM1TApm1E4c@dpg-d49grhhr0fns738icr4g-a/exodia_api_mg13"
-      # Add this to ensure your app runs on the port Render assigns
-      - key: PORT
-        value: 8000```
+      - key: DB_HOST
+        fromService:
+          type: psql
+          name: exodia-api 
+          property: host
+      - key: DB_PORT
+        fromService:
+          type: psql
+          name: exodia-api
+          property: port
+      - key: DB_DATABASE
+        fromService:
+          type: psql
+          name: exodia-api
+          property: database
+      - key: DB_USERNAME
+        fromService:
+          type: psql
+          name: exodia-api
+          property: user
+      - key: DB_PASSWORD
+        fromService:
+          type: psql
+          name: exodia-api 
+          property: password```
+**Important:** You need to find the name of your database service in Render and put it in the `name:` fields above. It is likely `exodia-api-db` or something similar.
 
-### Summary of the Changes:
+This is the best-practice way to do it. It tells your web service to automatically get the credentials from your database service, so you don't have to copy and paste them.
+
+### Final Steps
+
+1.  **Save** the changes to your `render.yaml` file.
+2.  **Commit** and **push** the updated file to your GitHub repository.
+
+```bash
+git add render.yaml
+git commit -m "feat: Update render.yaml to use individual DB env vars"
+git push
