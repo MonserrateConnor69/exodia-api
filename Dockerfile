@@ -11,12 +11,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set the working directory
 WORKDIR /var/www/html
 
-# Copy composer files and install vendors
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --optimize-autoloader
-
-# Copy the rest of the application code
+# --- THIS IS THE CORRECTED ORDER ---
+# 1. Copy ALL application files first
 COPY . .
+
+# 2. Now run composer install, with the artisan file present
+RUN composer install --no-dev --no-interaction --optimize-autoloader
+# --- END CORRECTION ---
 
 # Set correct permissions for Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache
