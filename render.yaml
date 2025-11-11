@@ -8,13 +8,13 @@ services:
   - type: web
     name: exodia-api
     plan: free
-    runtime: php # <-- THIS IS THE CORRECTED LINE
+    runtime: php:8.2 # <-- Being more specific with the PHP version
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       php artisan key:generate --force
       php artisan config:clear
       php artisan migrate --force || true
-    startCommand: php artisan serve --host 0.0.0.0 --port $PORT
+    startCommand: php-fpm -F # <-- The correct production start command
     envVars:
       - key: APP_KEY
         sync: false
