@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('workout_logs', function (Blueprint $table) {
-            // Add the new column. 
-            // We'll make it an integer and default to 1 when a workout is first logged.
-            $table->integer('recovery_stage')->default(1)->after('exercise_id');
+            if (!Schema::hasColumn('workout_logs', 'recovery_stage')) {
+                $table->integer('recovery_stage')->default(1)->after('exercise_id');
+            }
         });
     }
 
@@ -24,8 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('workout_logs', function (Blueprint $table) {
-            // This allows us to undo the change if needed.
-            $table->dropColumn('recovery_stage');
+            if (Schema::hasColumn('workout_logs', 'recovery_stage')) {
+                $table->dropColumn('recovery_stage');
+            }
         });
     }
 };
