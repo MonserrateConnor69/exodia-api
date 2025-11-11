@@ -1,17 +1,28 @@
+# 1. Define the database.
+databases:
+  - name: exodia-api-db
+    plan: free
+
+# 2. Define the web service.
 services:
   - type: web
     name: exodia-api
-    env: php
     plan: free
+    runtime: php # <-- THIS IS THE CORRECTED LINE
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       php artisan key:generate --force
+      php artisan config:clear
       php artisan migrate --force || true
     startCommand: php artisan serve --host 0.0.0.0 --port $PORT
     envVars:
+      - key: APP_KEY
+        sync: false
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
-      - key: APP_KEY
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: GEMINI_API_KEY
         sync: false
