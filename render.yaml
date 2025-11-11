@@ -3,8 +3,8 @@ services:
   - type: web
     name: exodia-api
     plan: free
-    runtime: docker  # Change this from 'php' to 'docker'
-    dockerfilePath: ./Dockerfile # Assumes Dockerfile is in the root
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: APP_KEY
         generateValue: true
@@ -16,27 +16,10 @@ services:
         value: false
       - key: DB_CONNECTION
         value: pgsql
-      - fromDatabase:
-          name: exodia-db
-          property: host
-        key: DB_HOST
-      - fromDatabase:
-          name: exodia-db
-          property: database
-        key: DB_DATABASE
-      - fromDatabase:
-          name: exodia-db
-          property: user
-        key: DB_USERNAME
-      - fromDatabase:
-          name: exodia-db
-          property: password
-        key: DB_PASSWORD
+      - key: DATABASE_URL
+        value: "postgresql://exodia_api_mg13_user:QJEvqRyVh9gft1GhHbTi7NM1TApm1E4c@dpg-d49grhhr0fns738icr4g-a/exodia_api_mg13"
       # Add this to ensure your app runs on the port Render assigns
       - key: PORT
-        value: 8000
+        value: 8000```
 
-databases:
-  # This defines your database
-  - name: exodia-db
-    plan: free
+### Summary of the Changes:
