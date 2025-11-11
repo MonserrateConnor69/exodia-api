@@ -1,0 +1,46 @@
+services:
+  # This is your PostgreSQL Database service
+  - type: psql
+    name: exodia-db
+    plan: free
+
+  # This is your Laravel Web Service
+  - type: web
+    name: exodia-api
+    plan: free
+    # This is the magic line that fixes your problem
+    runtime: php
+    buildCommand: "composer install --no-dev --optimize-autoloader && php artisan config:cache"
+    startCommand: "php artisan serve --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: APP_KEY
+        # You will set this manually in the Render dashboard for security
+      - key: GEMINI_API_KEY
+        # You will set this manually in the Render dashboard for security
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: pgsql
+      # These lines automatically connect your app to the database above
+      - key: DB_HOST
+        fromService:
+          type: psql
+          name: exodia-db
+          property: host
+      - key: DB_DATABASE
+        fromService:
+          type: psql
+          name: exodia-db
+          property: database
+      - key: DB_USERNAME
+        fromService:
+          type: psql
+          name: exodia-db
+          property: user
+      - key: DB_PASSWORD
+        fromService:
+          type: psql
+          name: exodia-db
+          property: password

@@ -138,21 +138,18 @@ class AIController extends Controller
     $user = Auth::user();
     $userDetails = "Age: {$user->age}, Gender: {$user->gender}, Weight: {$user->weight} lbs, Height: {$user->height} inches.";
 
-    // This is the corrected database query.
-    // It properly joins the tables to find all unique muscle groups the user has ever trained.
+    
     $trainedMuscleGroupIds = WorkoutLog::where('user_id', $user->id)
         ->join('exercises', 'workout_logs.exercise_id', '=', 'exercises.id')
         ->select('exercises.muscle_group_id')
         ->distinct()
         ->pluck('muscle_group_id');
     
-    // Get the names of these muscle groups
     $trainedMuscles = MuscleGroup::whereIn('id', $trainedMuscleGroupIds)
         ->pluck('name')
         ->implode(', ');
 
     if (empty($trainedMuscles)) {
-         // This is a fallback in case the frontend check fails.
         return response()->json(['error' => 'No workout history found to base a diet on.'], 400);
     }
 

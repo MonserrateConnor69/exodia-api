@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Route;
 
 
 
-// --- Authentication Routes ---
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -42,8 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/diet-recommendation', [AIController::class, 'generateDietRecommendation']);
 
-     Route::get('/workout-logs/muscle/{muscleGroup}', [WorkoutController::class, 'getTodaysLogsForMuscle']);
-     Route::delete('/workout-logs/{log}', [WorkoutController::class, 'destroy']);
+    Route::get('/workout-logs/muscle/{muscleGroup}', [WorkoutController::class, 'getTodaysLogsForMuscle']);
+    Route::delete('/workout-logs/{log}', [WorkoutController::class, 'destroy']);
 
 
 });

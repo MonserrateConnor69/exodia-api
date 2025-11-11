@@ -10,7 +10,6 @@ class UserController extends Controller
     
   public function updateVitals(Request $request)
 {
-    // ✅ UPDATED: Stricter validation rules on the server
     $validatedData = $request->validate([
         'weight' => 'required|numeric|min:50|max:1000',
         'height' => 'required|numeric|min:24|max:96',
