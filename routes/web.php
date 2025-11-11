@@ -3,6 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 
+
+Route::get('/', function () {
+    return response()->json(['message' => 'API is running']);
+});
+
+
 Route::get('/test-openai', function() {
     try {
         $response = Http::withToken(config('openai.key'))
@@ -21,4 +27,7 @@ Route::get('/test-openai', function() {
             'message' => $e->getMessage(),
         ];
     }
+
+
+    
 });
