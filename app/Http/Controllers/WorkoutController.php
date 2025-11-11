@@ -52,7 +52,7 @@ public function getRecoveryStates()
 
     public function getMuscleGroups()
     {
-        return MuscleGroup::all();
+        return response()->json(MuscleGroup::all());
     }
 
     
