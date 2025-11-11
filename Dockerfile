@@ -1,9 +1,9 @@
 # Use an official PHP image as a base
 FROM php:8.2-fpm-alpine
 
-# Install dependencies needed for Laravel
-RUN apk add --no-cache git libzip-dev postgresql-dev \
-    && docker-php-ext-install pdo pdo_pgsql zip bcmath
+# Install dependencies needed for Laravel (with MySQL and SSL)
+RUN apk add --no-cache git libzip-dev mariadb-dev ca-certificates \
+    && docker-php-ext-install pdo pdo_mysql zip bcmath
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
