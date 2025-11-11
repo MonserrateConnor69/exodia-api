@@ -27,3 +27,5 @@ return new class extends Migration
         Schema::dropIfExists('workout_logs');
     }
 };
+
+// Forcing a change for git to see
