@@ -76,16 +76,17 @@ public function getRecoveryStates()
         );
         
        
-        $log = WorkoutLog::updateOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'exercise_id' => $exercise->id,
-            ],
-            [
-                'recovery_stage' => 1, // Start recovery
-                'created_at' => isset($validated['date']) ? Carbon::parse($validated['date']) : now()
-            ]
-        );
+       $log = WorkoutLog::updateOrCreate(
+    [
+        'user_id' => Auth::id(),
+        'exercise_id' => $exercise->id,
+    ],
+    [
+        'recovery_stage' => 1, // ✅ Correctly set to Stage 1 (Red)
+        'created_at' => isset($validated['date']) ? Carbon::parse($validated['date']) : now()
+    ]
+);
+
         
         $log->load('exercise');
 
