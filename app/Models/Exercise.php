@@ -9,17 +9,14 @@ class Exercise extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    // ✅ CRITICAL FIX: This stops Eloquent from crashing when setting timestamps.
+    public $timestamps = false; 
+
     protected $fillable = [
         'name',
         'muscle_group_id',
     ];
 
-   
     public function muscleGroup()
     {
         return $this->belongsTo(MuscleGroup::class);

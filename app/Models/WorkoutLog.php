@@ -9,17 +9,15 @@ class WorkoutLog extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    // ✅ CRITICAL FIX: This stops Eloquent from crashing when setting timestamps.
+    public $timestamps = false; 
+
     protected $fillable = [
         'user_id',
         'exercise_id',
-        'recovery_stage',  // critical for your controller
+        'recovery_stage',
         'created_at',
-        'updated_at',      // if you manually set timestamps
+        'updated_at',
     ];
 
     public function user()
