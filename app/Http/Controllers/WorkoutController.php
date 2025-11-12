@@ -6,6 +6,7 @@ use App\Models\WorkoutLog;
 use App\Models\Exercise;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class WorkoutController extends Controller
@@ -76,7 +77,7 @@ class WorkoutController extends Controller
         return response()->json([]);
     }
 
-    // ✅ FIX 2: Prevents relationship loading/serialization that causes 500 error.
+    // ✅ FIX: Using cache-based storage instead of database
     public function storeWorkoutLog(Request $request)
     {
         $validated = $request->validate([
@@ -85,28 +86,54 @@ class WorkoutController extends Controller
             'date' => 'sometimes|date_format:Y-m-d',
         ]);
 
-        $exercise = Exercise::firstOrCreate(
-            ['name' => $validated['exercise_name']],
-            ['muscle_group_id' => $validated['muscle_group_id']]
-        );
+        $userId = Auth::id();
+        $cacheKey = "workout_logs_{$userId}";
         
-        $log = WorkoutLog::updateOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'exercise_id' => $exercise->id,
-            ],
-            [
-                'recovery_stage' => 1,
-                'created_at' => isset($validated['date']) ? Carbon::parse($validated['date']) : now()
-            ]
-        );
+        // Get existing logs from cache
+        $logs = Cache::get($cacheKey, []);
         
-        // REMOVE: $log->load('exercise'); 
-        // CRITICAL FIX: Return only necessary data as a simple array to prevent serialization crash.
+        // Generate a unique ID for this log (using timestamp + random)
+        $logId = time() . '_' . uniqid();
+        
+        // Check if a log already exists for this exercise and user (updateOrCreate logic)
+        $existingLogKey = null;
+        foreach ($logs as $key => $log) {
+            if ($log['exercise_name'] === $validated['exercise_name'] && 
+                $log['user_id'] === $userId) {
+                $existingLogKey = $key;
+                break;
+            }
+        }
+        
+        $createdAt = isset($validated['date']) 
+            ? Carbon::parse($validated['date'])->format('Y-m-d H:i:s')
+            : now()->format('Y-m-d H:i:s');
+        
+        $logData = [
+            'id' => $existingLogKey ? $logs[$existingLogKey]['id'] : $logId,
+            'user_id' => $userId,
+            'exercise_name' => $validated['exercise_name'],
+            'muscle_group_id' => $validated['muscle_group_id'],
+            'recovery_stage' => $existingLogKey ? $logs[$existingLogKey]['recovery_stage'] : 1,
+            'created_at' => $createdAt,
+            'updated_at' => now()->format('Y-m-d H:i:s'),
+        ];
+        
+        if ($existingLogKey !== null) {
+            // Update existing log
+            $logs[$existingLogKey] = $logData;
+        } else {
+            // Create new log
+            $logs[] = $logData;
+        }
+        
+        // Store back in cache (24 hour expiration)
+        Cache::put($cacheKey, $logs, now()->addHours(24));
+        
         return response()->json([
             'message' => 'Workout logged successfully!',
-            'workout_log' => $log->toArray(),
-            'exercise_name' => $exercise->name // Optionally send back the exercise name
+            'workout_log' => $logData,
+            'exercise_name' => $validated['exercise_name']
         ], 201);
     }
 
@@ -115,13 +142,37 @@ class WorkoutController extends Controller
         $userId = Auth::id();
         $date = $request->query('date') ? Carbon::parse($request->query('date')) : Carbon::today();
         
-        // CRITICAL FIX: Only load 'exercise', not the nested 'muscleGroup'
-        $logs = WorkoutLog::where('user_id', $userId)
-            ->whereDate('created_at', $date)
-            ->with('exercise') 
-            ->get();
+        // Get logs from cache instead of database
+        $cacheKey = "workout_logs_{$userId}";
+        $allLogs = Cache::get($cacheKey, []);
+        
+        // Filter logs for the requested date
+        $logs = array_filter($allLogs, function($log) use ($date, $userId) {
+            $logDate = Carbon::parse($log['created_at'])->format('Y-m-d');
+            $requestDate = $date->format('Y-m-d');
+            return $logDate === $requestDate && $log['user_id'] === $userId;
+        });
+        
+        // Format logs to include exercise information
+        $formattedLogs = array_map(function($log) {
+            return [
+                'id' => $log['id'],
+                'user_id' => $log['user_id'],
+                'exercise_id' => null, // Not using exercise_id anymore
+                'exercise_name' => $log['exercise_name'],
+                'muscle_group_id' => $log['muscle_group_id'],
+                'recovery_stage' => $log['recovery_stage'],
+                'created_at' => $log['created_at'],
+                'updated_at' => $log['updated_at'] ?? null,
+                'exercise' => [
+                    'id' => null,
+                    'name' => $log['exercise_name'],
+                    'muscle_group_id' => $log['muscle_group_id'],
+                ]
+            ];
+        }, array_values($logs));
             
-        return response()->json($logs);
+        return response()->json($formattedLogs);
     }
 
     public function destroy(WorkoutLog $log)
