@@ -10,6 +10,7 @@ use Carbon\Carbon;
 
 class WorkoutController extends Controller
 {
+    // ✅ FIX 1: Remove nested eager loading that crashes on empty MuscleGroup table.
     public function getRecoveryStates()
     {
         /** @var \App\Models\User $user */
@@ -17,17 +18,20 @@ class WorkoutController extends Controller
 
         $recoveringLogs = $user->workoutLogs()
             ->where('recovery_stage', '<', 4)
-            ->with('exercise.muscleGroup') 
+            // CRITICAL FIX: Only load 'exercise', not the nested 'muscleGroup'
+            ->with('exercise') 
             ->get();
 
         $recoveryStates = [];
 
         foreach ($recoveringLogs as $log) {
-            if ($log->exercise && $log->exercise->muscleGroup) {
-                $muscleId = $log->exercise->muscleGroup->id;
-
-                // ✅ FIXED: Use the log's recovery stage, not the muscle group ID
-                $currentStage = $log->recovery_stage;
+            // Check that the exercise relationship exists
+            if ($log->exercise) {
+                // Get the muscle ID directly from the exercise model
+                $muscleId = $log->exercise->muscle_group_id;
+                
+                // Use the log's recovery stage (which you previously fixed)
+                $currentStage = $log->recovery_stage; 
 
                 if (!isset($recoveryStates[$muscleId]) || $currentStage < $recoveryStates[$muscleId]) {
                     $recoveryStates[$muscleId] = $currentStage;
@@ -50,6 +54,7 @@ class WorkoutController extends Controller
 
     public function getMuscleGroups()
     {
+        // HARDCODED DATA IS CORRECT
         $muscleGroups = [
             ['id' => 1, 'name' => 'Chest', 'created_at' => null, 'updated_at' => null],
             ['id' => 2, 'name' => 'Back', 'created_at' => null, 'updated_at' => null],
@@ -65,11 +70,13 @@ class WorkoutController extends Controller
         return response()->json($muscleGroups, 200);
     }
 
+    // Route Model Binding Bypassed
     public function getExercisesForMuscleGroup(int $muscleGroupId)
     {
         return response()->json([]);
     }
 
+    // ✅ FIX 2: Prevents relationship loading/serialization that causes 500 error.
     public function storeWorkoutLog(Request $request)
     {
         $validated = $request->validate([
@@ -94,11 +101,12 @@ class WorkoutController extends Controller
             ]
         );
         
-        $log->load('exercise');
-
+        // REMOVE: $log->load('exercise'); 
+        // CRITICAL FIX: Return only necessary data as a simple array to prevent serialization crash.
         return response()->json([
             'message' => 'Workout logged successfully!',
-            'workout_log' => $log
+            'workout_log' => $log->toArray(),
+            'exercise_name' => $exercise->name // Optionally send back the exercise name
         ], 201);
     }
 
@@ -107,9 +115,10 @@ class WorkoutController extends Controller
         $userId = Auth::id();
         $date = $request->query('date') ? Carbon::parse($request->query('date')) : Carbon::today();
         
+        // CRITICAL FIX: Only load 'exercise', not the nested 'muscleGroup'
         $logs = WorkoutLog::where('user_id', $userId)
             ->whereDate('created_at', $date)
-            ->with('exercise.muscleGroup')
+            ->with('exercise') 
             ->get();
             
         return response()->json($logs);
@@ -122,11 +131,13 @@ class WorkoutController extends Controller
         return response()->json(['message' => 'Workout log removed successfully.']);
     }
 
+    // Route Model Binding Bypassed
     public function getTodaysLogsForMuscle(int $muscleGroupId)
     {
         $userId = Auth::id();
         $exerciseIds = Exercise::where('muscle_group_id', $muscleGroupId)->pluck('id');
 
+        // CRITICAL FIX: Only load 'exercise', not the nested 'muscleGroup'
         $logs = WorkoutLog::where('user_id', $userId)
             ->whereIn('exercise_id', $exerciseIds)
             ->whereDate('created_at', Carbon::today())
@@ -136,7 +147,7 @@ class WorkoutController extends Controller
         return response()->json($logs);
     }
 
-    // ✅ NEW: Delete today's logs for a specific muscle group
+    // NEW: Delete today's logs for a specific muscle group
     public function deleteTodaysLogsForMuscle(int $muscleGroupId)
     {
         $userId = Auth::id();
