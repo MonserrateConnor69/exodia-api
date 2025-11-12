@@ -10,14 +10,12 @@ class WorkoutLog extends Model
     use HasFactory;
 
     // ✅ CRITICAL FIX: This stops Eloquent from crashing when setting timestamps.
-    public $timestamps = false; 
+   
 
     protected $fillable = [
         'user_id',
         'exercise_id',
-        'recovery_stage',
-        'created_at',
-        'updated_at',
+        'recovery_stage', 
     ];
 
     public function user()

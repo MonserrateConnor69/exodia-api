@@ -89,6 +89,7 @@ class WorkoutController extends Controller
         $userId = Auth::id();
         $cacheKey = "workout_logs_{$userId}";
         
+<<<<<<< HEAD
         // Get existing logs from cache
         $logs = Cache::get($cacheKey, []);
         
@@ -129,6 +130,20 @@ class WorkoutController extends Controller
         
         // Store back in cache (24 hour expiration)
         Cache::put($cacheKey, $logs, now()->addHours(24));
+=======
+       
+       $log = WorkoutLog::updateOrCreate(
+    [
+        'user_id' => Auth::id(),
+        'exercise_id' => $exercise->id,
+    ],
+    [
+        'recovery_stage' => 1, // ✅ Correctly set to Stage 1 (Red)
+        'created_at' => isset($validated['date']) ? Carbon::parse($validated['date']) : now()
+    ]
+);
+
+>>>>>>> temp-laravel-fix
         
         return response()->json([
             'message' => 'Workout logged successfully!',
