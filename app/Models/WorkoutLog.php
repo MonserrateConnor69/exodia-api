@@ -16,6 +16,7 @@ class WorkoutLog extends Model
         'user_id',
         'exercise_id',
         'recovery_stage', 
+        'created_at'
     ];
 
     public function user()
