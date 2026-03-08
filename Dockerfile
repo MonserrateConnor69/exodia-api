@@ -1,30 +1,23 @@
-# Use an official PHP image as a base
-FROM php:8.2-fpm-alpine
+# Use the Apache image instead of FPM
+FROM php:8.2-apache
 
-# Install dependencies needed for Laravel (with MySQL and SSL)
-RUN apk add --no-cache git libzip-dev mariadb-dev ca-certificates \
+# Install dependencies
+RUN apt-get update && apt-get install -y git libzip-dev default-mysql-client \
     && docker-php-ext-install pdo pdo_mysql zip bcmath
 
-# Install Composer
+# Change Apache document root to Laravel's public directory
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Enable Apache mod_rewrite for Laravel routing
+RUN a2enmod rewrite
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set the working directory
 WORKDIR /var/www/html
-
-# --- THIS IS THE CORRECTED ORDER ---
-# 1. Copy ALL application files first
 COPY . .
-
-# 2. Now run composer install, with the artisan file present
 RUN composer install --no-dev --no-interaction --optimize-autoloader
-# --- END CORRECTION ---
-
-# Set correct permissions for Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Copy the entrypoint script and make it executable
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# Set the entrypoint to our script
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# Remove the entrypoint script entirely and let Apache handle the serving
+# You can run migrations in the Render dashboard under "Build Command" or "Start Command" instead.
