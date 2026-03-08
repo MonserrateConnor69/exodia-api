@@ -35,7 +35,7 @@ class WorkoutLogPolicy
     
      public function delete(User $user, WorkoutLog $log): bool
     {
-        return $user->id === $log->user_id;
+        return $user->id == $log->user_id;
     }
     
     public function restore(User $user, WorkoutLog $workoutLog): bool
